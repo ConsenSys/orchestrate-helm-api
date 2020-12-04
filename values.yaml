@@ -26,6 +26,13 @@ environmentSecrets: {}
 aws: # DEPRECATED: use podAnnotations
   enabled: false
 
+vaultAgent:
+  role: "client"
+  enabled: false
+  image:
+    repository: vault
+    tag: 1.6.0
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
