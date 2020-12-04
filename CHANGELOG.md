@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.6.0 (2020-12-04)
+### 🛠 Features
+* Add vault agent in APIs
+
 ## v0.5.6 (2020-09-02)
 ### 🛠 Bug fixes
 * Migrate deprecated APIs removed in v1.16

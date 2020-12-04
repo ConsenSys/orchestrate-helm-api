@@ -34,8 +34,8 @@ spec:
       serviceAccountName: {{ include "orchestrate-api.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- if .Values.initContainers }}
       initContainers:
+      {{- if .Values.initContainers }}
         - name: {{ .Chart.Name }}-init
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -53,6 +53,24 @@ spec:
             - secretRef:
                 name: {{ include "orchestrate-api.fullname" . }}-secretmap
                 optional: true
+      {{- end }}
+      {{- if .Values.vaultAgent.enabled }}
+      - name: vault-token
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.vaultAgent.image.repository }}:{{ .Values.vaultAgent.image.tag }}"
+        args:
+          - "agent"
+          - "-config"
+          - "/vault/config/agent-config.hcl"
+        envFrom:
+          - configMapRef:
+              name: {{ include "orchestrate-api.fullname" . }}-envmap
+        volumeMounts:
+          - name: vault-token
+            mountPath: /vault/token
+          - name: vault-config
+            mountPath: /vault/config
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -91,6 +109,21 @@ spec:
               port: http-metrics
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      {{- if .Values.vaultAgent.enabled }}
+          volumeMounts:
+            - name: vault-token
+              mountPath: /vault/token
+      {{- end }}            
+      {{- if .Values.vaultAgent.enabled }}
+      volumes:
+        - name: vault-token
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1M
+        - name: vault-config
+          configMap:
+            name: {{ include "orchestrate-api.fullname" . }}-vault-agent
+      {{ end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

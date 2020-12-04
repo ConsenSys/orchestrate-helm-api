@@ -1,0 +1,26 @@
+{{- if .Values.vaultAgent.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "orchestrate-api.fullname" . }}-vault-agent
+  labels:
+    {{- include "orchestrate-api.labels" . | nindent 4 }}
+data:
+  agent-config.hcl: |
+    exit_after_auth = true
+    auto_auth {
+      method "kubernetes" {
+       mount_path = "auth/kubernetes"
+       config = {
+        role = "{{ .Values.vaultAgent.role }}"
+       }
+      }
+      sink "file" {
+        config = {
+          path = "/vault/token/.vault-token"
+        }
+      }
+    }
+
+{{- end }}
